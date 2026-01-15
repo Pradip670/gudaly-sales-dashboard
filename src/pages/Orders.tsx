@@ -11,6 +11,7 @@ import { Plus, Search, Trash2, ShoppingCart, Minus, FileText, Link2, MessageCirc
 import { toast } from 'sonner';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+
 export default function Orders() {
   const location = useLocation();
   const { orders, leads, products, addOrder, updateOrder, deleteOrder } = useStore();
