@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useStore, Order, OrderItem } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -7,10 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Search, Trash2, ShoppingCart, Minus, FileText, Link2, MessageCircle, Download, Check, Copy } from 'lucide-react';
-import { toast } from 'sonner';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { Plus, Search, Trash2, ShoppingCart, Minus, FileText } from 'lucide-react';
+import { InvoiceModal } from '@/components/InvoiceModal';
 
 export default function Orders() {
   const location = useLocation();
@@ -20,8 +18,6 @@ export default function Orders() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
-  const invoiceRef = useRef<HTMLDivElement>(null);
   
   const [selectedLeadId, setSelectedLeadId] = useState('');
   const [orderItems, setOrderItems] = useState<{ productId: string; quantity: number }[]>([]);
@@ -135,73 +131,6 @@ export default function Orders() {
   const formatCurrency = (value: number) => `₹${value.toLocaleString('en-IN')}`;
 
   const { subtotal, gstAmount, total } = calculateTotals();
-
-  // Get invoice URL
-  const getInvoiceUrl = (order: Order) => {
-    const baseUrl = window.location.origin;
-    return `${baseUrl}/orders?invoice=${order.invoiceNumber}`;
-  };
-
-  // Copy PO link to clipboard
-  const copyInvoiceLink = async (order: Order) => {
-    const url = getInvoiceUrl(order);
-    try {
-      await navigator.clipboard.writeText(url);
-      setLinkCopied(true);
-      toast.success('Invoice link copied to clipboard!');
-      setTimeout(() => setLinkCopied(false), 2000);
-    } catch {
-      toast.error('Failed to copy link');
-    }
-  };
-
-  // Share on WhatsApp
-  const shareOnWhatsApp = (order: Order) => {
-    const url = getInvoiceUrl(order);
-    const message = encodeURIComponent(
-      `🧾 *Invoice: ${order.invoiceNumber}*\n\n` +
-      `Customer: ${order.customerName}\n` +
-      `Amount: ${formatCurrency(order.total)}\n` +
-      `Status: ${order.paymentStatus}\n\n` +
-      `View invoice: ${url}`
-    );
-    const whatsappUrl = `https://wa.me/${order.customerMobile.replace(/\D/g, '')}?text=${message}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
-  // Download PDF
-  const downloadPDF = async (order: Order) => {
-    if (!invoiceRef.current) return;
-    
-    toast.loading('Generating PDF...');
-    
-    try {
-      const canvas = await html2canvas(invoiceRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-      
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`${order.invoiceNumber}.pdf`);
-      
-      toast.dismiss();
-      toast.success('Invoice downloaded!');
-    } catch {
-      toast.dismiss();
-      toast.error('Failed to generate PDF');
-    }
-  };
 
   return (
     <div className="page-container space-y-6">
@@ -479,148 +408,11 @@ export default function Orders() {
       </Card>
 
       {/* Invoice Modal */}
-      <Dialog open={isInvoiceOpen} onOpenChange={setIsInvoiceOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>Invoice {viewingOrder?.invoiceNumber}</span>
-            </DialogTitle>
-          </DialogHeader>
-          {viewingOrder && (
-            <div className="space-y-6">
-              {/* Invoice Content - for PDF capture */}
-              <div ref={invoiceRef} className="bg-white p-6 space-y-6">
-                {/* Customer Info */}
-                <div className="flex justify-between">
-                  <div>
-                    <h3 className="font-semibold text-lg text-foreground">Gudaly Chocolates</h3>
-                    <p className="text-sm text-muted-foreground">Premium Chocolate Distributor</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-mono text-sm text-foreground">{viewingOrder.invoiceNumber}</p>
-                    <p className="text-sm text-muted-foreground">{viewingOrder.createdAt}</p>
-                  </div>
-                </div>
-
-                <div className="border-t border-border pt-4">
-                  <p className="text-sm font-medium text-foreground">Bill To:</p>
-                  <p className="font-semibold text-foreground">{viewingOrder.customerName}</p>
-                  <p className="text-sm text-muted-foreground">{viewingOrder.customerArea}</p>
-                  <p className="text-sm text-muted-foreground">{viewingOrder.customerMobile}</p>
-                </div>
-
-                {/* Items */}
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="table-header text-left py-2">Product</th>
-                        <th className="table-header text-right py-2">Qty</th>
-                        <th className="table-header text-right py-2">Price</th>
-                        <th className="table-header text-right py-2">GST</th>
-                        <th className="table-header text-right py-2">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {viewingOrder.items.map((item, i) => {
-                        const itemTotal = item.price * item.quantity;
-                        const itemGst = (itemTotal * item.gstPercent) / 100;
-                        return (
-                          <tr key={i} className="border-b border-border/50">
-                            <td className="py-2 text-foreground">{item.productName}</td>
-                            <td className="py-2 text-right text-foreground">{item.quantity}</td>
-                            <td className="py-2 text-right text-foreground">{formatCurrency(item.price)}</td>
-                            <td className="py-2 text-right text-foreground">{item.gstPercent}%</td>
-                            <td className="py-2 text-right font-medium text-foreground">
-                              {formatCurrency(itemTotal + itemGst)}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Totals */}
-                <div className="space-y-2 pt-4 border-t border-border">
-                  <div className="flex justify-between text-foreground">
-                    <span>Subtotal</span>
-                    <span>{formatCurrency(viewingOrder.subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between text-foreground">
-                    <span>GST</span>
-                    <span>{formatCurrency(viewingOrder.gstAmount)}</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold text-foreground">
-                    <span>Grand Total</span>
-                    <span className="text-primary">{formatCurrency(viewingOrder.total)}</span>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className="flex items-center gap-4 pt-4 border-t border-border">
-                  <span className="text-sm text-muted-foreground">Payment Status:</span>
-                  <span className={`status-badge ${
-                    viewingOrder.paymentStatus === 'Paid' ? 'status-paid' :
-                    viewingOrder.paymentStatus === 'Partial' ? 'status-partial' :
-                    'status-pending'
-                  }`}>
-                    {viewingOrder.paymentStatus}
-                  </span>
-                  {viewingOrder.paymentStatus !== 'Paid' && (
-                    <span className="text-sm text-muted-foreground">
-                      Paid: {formatCurrency(viewingOrder.amountPaid)} / {formatCurrency(viewingOrder.total)}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* PO Link */}
-              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                <Link2 className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground flex-1 truncate font-mono">
-                  {getInvoiceUrl(viewingOrder)}
-                </span>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => copyInvoiceLink(viewingOrder)}
-                  className="shrink-0"
-                >
-                  {linkCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3 pt-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => copyInvoiceLink(viewingOrder)}
-                  className="flex-1"
-                >
-                  {linkCopied ? <Check className="w-4 h-4 mr-2" /> : <Link2 className="w-4 h-4 mr-2" />}
-                  Copy Link
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => shareOnWhatsApp(viewingOrder)}
-                  className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-50"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  WhatsApp
-                </Button>
-                <Button 
-                  onClick={() => downloadPDF(viewingOrder)}
-                  className="flex-1"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download PDF
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <InvoiceModal 
+        order={viewingOrder} 
+        open={isInvoiceOpen} 
+        onOpenChange={setIsInvoiceOpen} 
+      />
     </div>
   );
 }
