@@ -6,67 +6,67 @@
 
 @layer base {
   :root {
-    /* Chocolate Brown Theme */
-    --background: 30 20% 97%;
-    --foreground: 25 30% 15%;
+    /* Professional Slate / Indigo Theme */
+    --background: 210 20% 98%;
+    --foreground: 222 32% 14%;
 
     --card: 0 0% 100%;
-    --card-foreground: 25 30% 15%;
+    --card-foreground: 222 32% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 25 30% 15%;
+    --popover-foreground: 222 32% 14%;
 
-    /* Chocolate Brown Primary */
-    --primary: 18 45% 28%;
-    --primary-foreground: 40 30% 96%;
+    /* Deep Indigo Primary */
+    --primary: 222 47% 20%;
+    --primary-foreground: 210 30% 98%;
 
-    /* Warm Cream Secondary */
-    --secondary: 35 25% 93%;
-    --secondary-foreground: 25 30% 20%;
+    /* Cool Neutral Secondary */
+    --secondary: 210 16% 94%;
+    --secondary-foreground: 222 32% 18%;
 
-    /* Soft Gold Accent */
-    --accent: 43 60% 55%;
-    --accent-foreground: 25 30% 15%;
+    /* Subtle Indigo Accent */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    --muted: 30 15% 92%;
-    --muted-foreground: 25 15% 45%;
+    --muted: 210 16% 94%;
+    --muted-foreground: 215 16% 47%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 70% 40%;
+    --success: 142 60% 38%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
-    --warning-foreground: 25 30% 15%;
+    --warning-foreground: 222 32% 14%;
 
-    --border: 30 20% 88%;
-    --input: 30 20% 88%;
-    --ring: 18 45% 28%;
+    --border: 214 20% 89%;
+    --input: 214 20% 89%;
+    --ring: 222 47% 20%;
 
-    --radius: 0.75rem;
+    --radius: 0.625rem;
 
     /* Sidebar */
-    --sidebar-background: 18 45% 22%;
-    --sidebar-foreground: 40 30% 92%;
-    --sidebar-primary: 43 60% 55%;
-    --sidebar-primary-foreground: 25 30% 15%;
-    --sidebar-accent: 18 35% 30%;
-    --sidebar-accent-foreground: 40 30% 92%;
-    --sidebar-border: 18 30% 28%;
-    --sidebar-ring: 43 60% 55%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 40% 18%;
+    --sidebar-accent-foreground: 210 20% 96%;
+    --sidebar-border: 222 35% 20%;
+    --sidebar-ring: 217 91% 60%;
 
-    /* Custom Colors */
-    --gold: 43 60% 55%;
-    --gold-light: 43 50% 70%;
-    --chocolate-dark: 18 45% 18%;
-    --chocolate-light: 18 35% 38%;
-    --cream: 40 30% 96%;
+    /* Custom Colors (kept for backwards compat) */
+    --gold: 217 91% 60%;
+    --gold-light: 217 91% 72%;
+    --chocolate-dark: 222 47% 11%;
+    --chocolate-light: 222 32% 30%;
+    --cream: 210 20% 98%;
 
     /* Chart Colors */
-    --chart-1: 18 45% 28%;
-    --chart-2: 43 60% 55%;
-    --chart-3: 142 70% 40%;
+    --chart-1: 222 47% 20%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 142 60% 38%;
     --chart-4: 38 92% 50%;
     --chart-5: 0 72% 51%;
   }
